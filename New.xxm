@@ -1,0 +1,67 @@
+[[!var
+i,n:integer;
+]][[
+Context.BufferSize:=$10000;
+Context.Include('Head.xxmi');
+
+if Context['pn'].Value='' then
+ begin
+
+  <<div style="border:1px solid black;margin:1em;padding:1em;">
+  Number of players:<br />
+  <ul>>
+  for i:=2 to 8 do
+   begin
+    <<li><a href="?pn=[[=i]]">[[=i]] players</a></li>>
+   end;
+  <</ul>
+  </div>>
+
+ end
+else
+ begin
+
+  n:=Context['pn'].AsInteger;
+  <<div style="border:1px solid black;margin:1em;padding:1em;">
+  <form method="post" action="Start.xxm">
+  <input type="hidden" name="n" value="[[=n]]" />
+  Players: (put your name in the first field)<br />
+
+  <input type="radio" name="b" value="1" />
+  <input type="text" name="p1" id="p0" style="width:8em;" />
+  <br />>
+  for i:=2 to n do
+   begin
+    <<input type="radio" name="b" value="[[=i]]" />
+    <input type="text" name="p[[=i]]" style="width:8em;" />
+    <br />>
+   end;
+
+  ]]
+  &nbsp;&uarr;&nbsp;Who will do the bank?<br />
+
+  <label>
+  <input type="radio" name="b" value="a" checked="1" />
+  Anyone can do the bank</label>
+  <br />
+
+  <label>
+  <input type="radio" name="b" value="x" />
+  An extra player "Bank" will connect</label>
+  <br />
+
+  Start balance:<br />
+  <input type="text" name="sb" style="width:6em;text-align:right;" value="100000" autocomplete="off" /><br />
+
+  <br />
+  <input type="submit" value="&emsp;&emsp;Start&emsp;&emsp;" />
+  </form>
+  </div>
+  
+  <script><!--
+  document.getElementById("p0").focus();
+  //--></script>>
+
+ end;
+
+Context.Include('Foot.xxmi');

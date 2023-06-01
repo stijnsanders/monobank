@@ -1,0 +1,15 @@
+[[@GameData]][[!var
+game_id,player_id,x:integer;
+]][[
+
+x:=Values[0];
+game_id:=x div 100;
+player_id:=(x mod 100)-1;
+
+if player_id=-1 then
+  GameSlot[game_id].PlayerBankConnected:=false
+else
+  GameSlot[game_id].Players[player_id].Connected:=false;
+//TODO: interlocked refcount?
+
+//TODO: close game on last connection

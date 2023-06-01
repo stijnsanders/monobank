@@ -1,0 +1,50 @@
+[[@GameData]][[!var
+i,n,pb,ps,game_id:integer;
+pn:array of string;
+]][[
+Context.BufferSize:=$1000;
+Context.Include('Head.xxmi');
+
+<<div style="border:1px solid black;margin:1em;padding:1em;">
+Starting new game...<br />>
+
+Context.Flush;
+
+n:=Context['n'].AsInteger;
+SetLength(pn,n);
+
+for i:=1 to n do
+  pn[i-1]:=Trim(Context['p'+IntToStr(i)].Value);
+if Context['b'].Value='x' then
+  pb:=PlayerBank_SeparateConnection
+else
+if Context['b'].Value='a' then
+  pb:=PlayerBank_AllPlayersDoBank
+else 
+  pb:=Context['b'].AsInteger-1;
+
+ps:=Context['sb'].AsInteger;
+
+try
+  game_id:=StartGame(pn,pb,ps);
+
+
+  ]]
+  Game started.<br />
+  <a href="Game.xxm[[?'g',game_id+GameSlotIndex,'n',pn[0]]]" id="a1">click here to continue</a>
+  <script><!--
+  document.getElementById("a1").click();
+  --></script>>
+
+except
+
+  on e:Exception do
+   begin
+    <<p style="color:red;font-weight:bold;">>=e.Message<</p>>
+   end;
+
+end;
+
+<</div>>
+
+Context.Include('Foot.xxmi');

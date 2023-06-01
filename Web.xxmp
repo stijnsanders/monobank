@@ -1,0 +1,69 @@
+{
+	"name": "monobank",
+	"compileCommand": "DCC32.EXE -U[[HandlerPath]]public -Q [[ProjectName]].dpr",
+	"files": {
+		"default_xxm": {
+			"path": "Default.xxm",
+			"unitName": "default_xxm1",
+			"unitPath": ""
+		},
+		"foot_xxmi": {
+			"path": "Foot.xxmi",
+			"unitName": "foot_xxmi1",
+			"unitPath": ""
+		},
+		"head_xxmi": {
+			"path": "Head.xxmi",
+			"unitName": "head_xxmi1",
+			"unitPath": ""
+		},
+		"new_xxm": {
+			"path": "New.xxm",
+			"unitName": "new_xxm1",
+			"unitPath": ""
+		},
+		"start_xxm": {
+			"path": "Start.xxm",
+			"unitName": "start_xxm1",
+			"unitPath": ""
+		},
+		"game_xxm": {
+			"path": "Game.xxm",
+			"unitName": "game_xxm1",
+			"unitPath": ""
+		},
+		"join_xxm": {
+			"path": "Join.xxm",
+			"unitName": "join_xxm1",
+			"unitPath": ""
+		},
+		"gd_xxm": {
+			"path": "GD.xxm",
+			"unitName": "gd_xxm1",
+			"unitPath": ""
+		},
+		"t_xxm": {
+			"path": "T.xxm",
+			"unitName": "t_xxm1",
+			"unitPath": ""
+		},
+		"gdclose_xxmi": {
+			"path": "GDClose.xxmi",
+			"unitName": "gdclose_xxmi1",
+			"unitPath": ""
+		},
+		"gdnext_xxmi": {
+			"path": "GDNext.xxmi",
+			"unitName": "gdnext_xxmi1",
+			"unitPath": ""
+		}
+	},
+	"units": {
+		"GameData": {}
+	},
+	"resources": {
+		"xxmp.pas": {}
+	},
+	"lastModified": "2023-05-21T23:52:12",
+	"uuid": "{B3F41EF8-7C34-4D29-9B72-AD4EBD50DE42}"
+}

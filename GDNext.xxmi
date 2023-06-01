@@ -1,0 +1,49 @@
+[[@GameData,xxmp]][[!var
+game_id,player_id,x,i:integer;
+s:string;
+]][[
+
+x:=Values[0];
+game_id:=x div 100;
+player_id:=(x mod 100)-1;
+
+if MonoBankClosing then
+ begin
+  
+  Context.SendHTML('data: *Shutting down'#13#10#13#10);
+  Context.Include('GDClose.xxmi',Values);
+
+ end
+else
+ begin
+
+  s:='';
+  for i:=0 to Length(GameSlot[game_id].Players)-1 do
+    s:=s+':'+IntToStr(GameSlot[game_id].Players[i].Balance);
+
+  //s:=s+GameSlot[game_id].LastTrans;
+
+  Context.SendHTML('data: '+s+#13#10#13#10);
+
+  if player_id=-1 then
+    i:=GameSlot[game_id].PlayerBankGameIndex
+  else
+    i:=GameSlot[game_id].Players[player_id].GameIndex;
+  
+  while i<GameSlot[game_id].GameIndex do
+   begin
+    Context.SendHTML('data: '+GameSlot[game_id].History[i]+#13#10#13#10);
+    inc(i);
+   end;
+
+  if player_id=-1 then
+    GameSlot[game_id].PlayerBankGameIndex:=GameSlot[game_id].GameIndex
+  else
+    GameSlot[game_id].Players[player_id].GameIndex:=GameSlot[game_id].GameIndex;
+
+  Context.Flush;
+  (Context as IXxmContextSuspend).Suspend(
+    Format('MonoBank%.2d%.2d',[game_id,player_id+1]),
+    250,3000,'GDNext.xxmi',x,'GDClose.xxmi',x);
+
+ end;

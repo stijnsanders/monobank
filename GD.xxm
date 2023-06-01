@@ -1,0 +1,24 @@
+[[@xxmHeaders,GameData]][[!var
+game_id,player_id,x:integer;
+]][[
+
+x:=StrToInt(Context.ContextString(csQueryString))-GameSlotIndex;
+game_id:=x div 100;
+player_id:=(x mod 100)-1;
+
+//Context.BufferSize:=0;//?
+Context.ContentType:='text/event-stream';
+(Context as IxxmHttpHeaders).ResponseHeaders['Cache-Control']:='no-cache';
+
+if player_id=-1 then
+  GameSlot[game_id].PlayerBankConnected:=true
+else
+  GameSlot[game_id].Players[player_id].Connected:=true;
+//TODO: interlocked refcount?
+
+Context.SendHTML('data: *Welcome '+Format('MonoBank%.2d%.2d',[game_id,player_id+1])+' '#13#10#13#10);
+
+
+(Context as IXxmContextSuspend).Suspend(
+  Format('MonoBank%.2d%.2d',[game_id,player_id+1]),
+  250,3000,'GDNext.xxmi',x,'GDClose.xxmi',x);

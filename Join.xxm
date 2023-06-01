@@ -1,0 +1,38 @@
+[[@GameData]][[!var
+n:string;
+game_id:integer;
+]][[
+Context.BufferSize:=$1000;
+Context.Include('Head.xxmi');
+
+<<div style="border:1px solid black;margin:1em;padding:1em;">
+Searching game...<br />>
+
+Context.Flush;
+
+try
+  n:=Trim(Context['n'].Value);
+  game_id:=GameIDByPlayerName(n);
+
+  if game_id=-1 then
+    raise Exception.Create('No active game found with a player by that name');
+
+  ]]
+  Game found.<br />
+  <a href="Game.xxm[[?'g',game_id+GameSlotIndex,'n',n]]" id="a1">click here to continue</a>
+  <script><!--
+  document.getElementById("a1").click();
+  --></script>>
+
+except
+
+  on e:Exception do
+   begin
+    <<p style="color:red;font-weight:bold;">>=e.Message<</p>>
+   end;
+
+end;
+
+<</div>>
+
+Context.Include('Foot.xxmi');

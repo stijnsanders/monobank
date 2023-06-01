@@ -1,0 +1,212 @@
+[[@GameData,xxmp]][[!var
+game_id,player_id,i:integer;
+n:string;
+DoesBank:boolean;
+]][[
+Context.BufferSize:=$10000;
+Context.Include('Head.xxmi');
+
+try
+
+game_id:=Context['g'].AsInteger-GameSlotIndex;
+n:=LowerCase(Context['n'].Value);
+
+if (game_id<0) or (game_id>=GameSlots) then
+  raise Exception.Create('Invalid game slot index');
+if not GameSlot[game_id].GameActive then
+  raise Exception.Create('Game slot is not currently in use.');
+
+if (n='bank') and (GameSlot[game_id].PlayerBank=PlayerBank_SeparateConnection) then
+  player_id:=-1
+else
+ begin
+  player_id:=0;
+  while (player_id<Length(GameSlot[game_id].Players)) and (LowerCase(GameSlot[game_id].Players[player_id].Name)<>n) do inc(player_id);
+  if player_id=Length(GameSlot[game_id].Players) then
+    raise Exception.Create('No player found by that name');
+ end;
+
+DoesBank:=(player_id<>-1) and (GameSlot[game_id].PlayerBank=player_id);
+
+<<table cellspacing="8" cellpadding="0" border="0">>
+if DoesBank then
+ begin
+  <<tr>
+  <td colspan="4">&nbsp;</td>
+  <td style="text-align:center;"><i>Bank</i></td>
+  </tr>>
+ end;
+if player_id<>-1 then
+ begin
+  <<tr>>
+  <<td>>=GameSlot[game_id].players[player_id].Name<</td>
+  <td id="b[[=player_id]]" style="text-align:right;">>=GameSlot[game_id].players[player_id].Balance<</td>
+  <td style="text-align:center;">&darr;</td>>
+  if DoesBank then
+   begin
+    <<td><input type="number" id="a[[=player_id]]" style="width:4em;text-align:right;" /></td>>
+   end
+  else
+  if GameSlot[game_id].PlayerBank=PlayerBank_AllPlayersDoBank then
+   begin
+    <<td><input type="number" id="a[[=player_id]]" style="width:4em;text-align:right;" /></td>
+    <td>
+    <button style="width:2em;" id="i[[=player_id]]" onclick="tt('c',[[=player_id]]);">+</button>
+    <button style="width:2em;" id="j[[=player_id]]" onclick="tt('d',[[=player_id]]);">-</button>
+    </td>>
+   end
+  else
+   begin
+    <<td>&nbsp;</td>>
+   end;
+  if DoesBank then
+   begin
+    <<td>
+    <button style="width:2em;" id="i[[=player_id]]" onclick="tt('c',[[=player_id]]);">+</button>
+    <button style="width:2em;" id="j[[=player_id]]" onclick="tt('d',[[=player_id]]);">-</button>
+    </td>>
+   end;
+  <</tr>>
+ end;
+for i:=0 to Length(GameSlot[game_id].Players)-1 do
+  if i<>player_id then
+   begin
+    <<tr>
+    <td>>=GameSlot[game_id].players[i].Name<</td>
+    <td id="b[[=i]]" style="text-align:right;">>=GameSlot[game_id].players[i].Balance<</td>>
+    if player_id=-1 then //is bank
+     begin
+      <<td>&nbsp;</td>>
+     end
+    else
+     begin
+      <<td><button style="width:2em;" id="s[[=i]]" onclick="tt('s',[[=i]]);">&larr;</button></td>>
+     end;
+    <<td><input type="number" id="a[[=i]]" style="width:4em;text-align:right;" /></td>>
+    if DoesBank or (player_id=-1) then
+     begin
+      <<td>
+      <button style="width:2em;" id="i[[=i]]" onclick="tt('c',[[=i]]);">+</button>
+      <button style="width:2em;" id="j[[=i]]" onclick="tt('d',[[=i]]);">-</button>
+      </td>>
+     end;
+    <</tr>>
+   end;
+//if GameSlot[game_id].PlayerBank=PlayerBank_SeparateConnection
+
+<</table>
+
+<div id="m" style="height:12em;overflow:scroll;white-space:nowrap;">>
+
+for i:=0 to GameSlot[game_id].GameIndex-1 do
+  Context.SendHTML(GameSlot[game_id].History[i]+#13#10);
+
+<</div>
+
+<img id="t" width="16" height="16" />
+
+<script><!--
+
+function logHTML(x){
+  var m=document.getElementById("m");
+  m.insertAdjacentHTML("beforeend",x);
+  m.scrollBy(0,50);
+}
+
+[[
+if GameSlot[game_id].GameIndex<>0 then
+ begin
+  ]]
+  (function(){
+    var m=document.getElementById("m");
+    m.scrollBy(0,[[=GameSlot[game_id].GameIndex*50]]);
+  })();
+  [[
+ end;
+]]
+
+if ("EventSource" in window) {
+	var es;
+
+	console.log('Connecting...');
+	es=new EventSource("GD.xxm?[[=GameSlotIndex+game_id*100+player_id+1]]");
+
+	es.onopen=function(){
+		console.log('Connected to event stream');
+	};
+	
+	es.onmessage=function(msg){
+		console.log("Message: " + msg.data);
+    var x=msg.data;
+    if(x[0]==":"){
+      var b=x.split(":");
+      for(var i=1;i<b.length;i++){
+        document.getElementById("b"+(i-1)).textContent=b[i];
+      }
+    }else
+    if(x[0]=="<"){
+      logHTML(x);
+    }
+	};
+
+	es.onerror=function() {
+    logHTML("<p style=\"color:red;\">Connection lost</p>");
+		console.log("Connection error!");
+	};
+	
+} else {
+  document.write("<div style=\"color:red;font-weight:bold;\">This browser doesn't support EventSource!</div>");
+}
+
+function tt(t,n){
+  var a=document.getElementById("a"+n);
+  var b=a.value|0;
+  a.value="";
+  if(b>0){
+    document.getElementById("t").src=
+      ["T.xxm?[[=GameSlotIndex+game_id*100+player_id+1]]",t,n,b].join("-");
+    console.log("T:"+t+" N:"+n+" S:"+b);
+  }
+}
+
+[[
+for i:=0 to Length(GameSlot[game_id].Players)-1 do
+ begin
+  if (i<>player_id) or DoesBank then
+   begin
+    ]]
+    document.getElementById("a[[=i]]").onkeypress=function(e){
+      var k=(e||window.event).key;
+      if(k=="Enter"){
+        tt("s",[[=i]]);
+        return false;
+      }
+      [[if DoesBank then begin]]
+      if(k=="c"){
+        tt("c",[[=i]]);
+        return false;
+      }
+      if(k=="d"){
+        tt("d",[[=i]]);
+        return false;
+      }
+      if(k!="0"&&k!="1"&&k!="2"&&k!="3"&&k!="4"&&k!="5"&&k!="6"&&k!="7"&&k!="8"&&k!="9")return false;
+      [[end;]]
+    };
+    [[
+   end;
+ end;
+]]
+
+//--></script>>
+
+except
+
+  on e:Exception do
+   begin
+    <<p style="color:red;font-weight:bold;">>=e.Message<</p>>
+   end;
+
+end;
+
+Context.Include('Foot.xxmi');

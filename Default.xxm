@@ -1,0 +1,20 @@
+[[
+Context.BufferSize:=$10000;
+Context.Include('Head.xxmi');
+
+<<div style="border:1px solid black;margin:1em;padding:1em;">
+<a href="New.xxm">New Game...</a>
+</div>>
+
+<<div style="border:1px solid black;margin:1em;padding:1em;">
+<form method="post" action="Join.xxm">
+Name:<br />
+<input type="text" name="n" id="pn1" style="width:8em;" /><br />
+<input type="submit" value="Join" />
+</form>
+<script><!--
+document.getElementById("pn1").focus();
+//--></script>
+</div>>
+
+Context.Include('Foot.xxmi');
