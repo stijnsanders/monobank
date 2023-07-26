@@ -1,4 +1,4 @@
-[[@GameData,xxmp]][[!var
+[[@Windows,GameData,xxmp]][[!var
 game_id,player_id,i:integer;
 n:string;
 DoesBank:boolean;
@@ -107,6 +107,9 @@ for i:=0 to GameSlot[game_id].GameIndex-1 do
 
 <script><!--
 
+
+var tn=[[=GetTickCount]];
+
 function logHTML(x){
   var m=document.getElementById("m");
   m.insertAdjacentHTML("beforeend",x);
@@ -163,8 +166,9 @@ function tt(t,n){
   var b=a.value|0;
   a.value="";
   if(b>0){
+    tn++;
     document.getElementById("t").src=
-      ["T.xxm?[[=GameSlotIndex+game_id*100+player_id+1]]",t,n,b].join("-");
+      ["T.xxm?[[=GameSlotIndex+game_id*100+player_id+1]]",t,n,b,tn].join("-");
     console.log("T:"+t+" N:"+n+" S:"+b);
   }
 }
