@@ -98,7 +98,7 @@ if GameSlot[game_id].FreeParkingCash then
  begin
   i:=Length(GameSlot[game_id].Players);
   <<tr>
-  <td><i class="f">Free Parking</i></td>
+  <td><i class="f">>=GameSlot[game_id].FreeParkingName<</i></td>
   <td id="b[[=i]]" style="text-align:right;">>=GameSlot[game_id].FreeParkingBalance<</td>>
   if player_id=-1 then //is bank
    begin

@@ -1,6 +1,7 @@
 [[@GameData]][[!var
 i,n,pb,ps,game_id:integer;
 fpc:boolean;
+fpn:string;
 pn:array of string;
 ]][[
 Context.BufferSize:=$1000;
@@ -26,9 +27,11 @@ else
 
 ps:=Context['sb'].AsInteger;
 fpc:=Context['fpc'].AsInteger=1;
+fpn:=Context['fpn'].Value;
+if fpn='' then fpn:='FP';//raise?
 
 try
-  game_id:=StartGame(pn,pb,ps,fpc);
+  game_id:=StartGame(pn,pb,ps,fpc,fpn);
 
 
   ]]

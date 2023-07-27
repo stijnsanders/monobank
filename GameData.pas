@@ -21,12 +21,14 @@ var
     end;
     PlayerBankConnected,FreeParkingCash:boolean;
     PlayerBank,GameIndex,PlayerBankGameIndex,FreeParkingBalance:integer;
+    FreeParkingName:string;
     History:array of string;
     HistorySize:integer;
   end;
 
 function StartGame(const Players:array of string;
-  PlayerBank,StartBalance:integer;FreeParkingCash:boolean):integer;
+  PlayerBank,StartBalance:integer;FreeParkingCash:boolean;
+  FreeParkingName:string):integer;
 
 function GameIDByPlayerName(const Name:string):integer;
 
@@ -52,7 +54,8 @@ begin
 end;
 
 function StartGame(const Players:array of string;
-  PlayerBank,StartBalance:integer;FreeParkingCash:boolean):integer;
+  PlayerBank,StartBalance:integer;FreeParkingCash:boolean;
+  FreeParkingName:string):integer;
 var
   n,i,j:integer;
   d:TDateTime;
@@ -103,6 +106,7 @@ begin
     GameSlot[Result].PlayerBankGameIndex:=0;
     //GameSlot[Result].HistorySize:=0;
     GameSlot[Result].FreeParkingCash:=FreeParkingCash;
+    GameSlot[Result].FreeParkingName:=FreeParkingName;
     GameSlot[Result].FreeParkingBalance:=0;
     GameSlot[Result].GameIndex:=0;
     GameSlot[Result].GameSince:=Now;
@@ -185,7 +189,7 @@ begin
        begin
         dec(GameSlot[game_id].Players[p1].Balance,a);
         inc(GameSlot[game_id].FreeParkingBalance,a);
-        AddHistory(HTMLEncode(GameSlot[game_id].Players[p1].Name)+' &rarr; <i class="f">Free Parking</i>');
+        AddHistory(HTMLEncode(GameSlot[game_id].Players[p1].Name)+' &rarr; <i class="f">'+HTMLEncode(GameSlot[game_id].FreeParkingName)+'</i>');
        end
       else
        begin
@@ -204,7 +208,7 @@ begin
       if GameSlot[game_id].FreeParkingCash and (p2=l) then
        begin
         inc(GameSlot[game_id].FreeParkingBalance,a);
-        AddHistory('<i class="b">Bank</i> &rarr; <i class="f">Free Parking</i>');
+        AddHistory('<i class="b">Bank</i> &rarr; <i class="f">'+HTMLEncode(GameSlot[game_id].FreeParkingName)+'</i>');
        end
       else
        begin
@@ -223,7 +227,7 @@ begin
       if GameSlot[game_id].FreeParkingCash and (p2=l) then
        begin
         dec(GameSlot[game_id].FreeParkingBalance,a);
-        AddHistory('<i class="f">Free Parking</i> &rarr; <i class="b">Bank</i>');
+        AddHistory('<i class="f">'+HTMLEncode(GameSlot[game_id].FreeParkingName)+'</i> &rarr; <i class="b">Bank</i>');
        end
       else
        begin
@@ -248,7 +252,7 @@ begin
       a:=GameSlot[game_id].FreeParkingBalance;
       inc(GameSlot[game_id].Players[p].Balance,a);
       GameSlot[game_id].FreeParkingBalance:=0;
-      AddHistory('<i class="f">Free Parking</i> &rarr; '+HTMLEncode(GameSlot[game_id].Players[p].Name));
+      AddHistory('<i class="f">'+HTMLEncode(GameSlot[game_id].FreeParkingName)+'</i> &rarr; '+HTMLEncode(GameSlot[game_id].Players[p].Name));
      end
     else
       raise Exception.Create('Unknown transaction type');
