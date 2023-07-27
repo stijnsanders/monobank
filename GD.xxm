@@ -8,6 +8,7 @@ player_id:=(x mod 100)-1;
 
 //Context.BufferSize:=0;//?
 Context.ContentType:='text/event-stream';
+Context.AutoEncoding:=aeUtf8;
 (Context as IxxmHttpHeaders).ResponseHeaders['Cache-Control']:='no-cache';
 
 if player_id=-1 then
