@@ -50,6 +50,11 @@ else
   An extra player "Bank" will connect</label>
   <br />
 
+  <label>
+  <input type="checkbox" name="fpc" value="1" />
+  Free Parking Cash</label>
+  <br />
+
   Start balance:<br />
   <input type="text" name="sb" style="width:6em;text-align:right;" value="100000" autocomplete="off" /><br />
 

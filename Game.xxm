@@ -33,7 +33,7 @@ if DoesBank then
  begin
   <<tr>
   <td colspan="4">&nbsp;</td>
-  <td style="text-align:center;"><i>Bank</i></td>
+  <td style="text-align:center;"><i class="b">Bank</i></td>
   </tr>>
  end;
 if player_id<>-1 then
@@ -93,6 +93,37 @@ for i:=0 to Length(GameSlot[game_id].Players)-1 do
     <</tr>>
    end;
 //if GameSlot[game_id].PlayerBank=PlayerBank_SeparateConnection
+
+if GameSlot[game_id].FreeParkingCash then
+ begin
+  i:=Length(GameSlot[game_id].Players);
+  <<tr>
+  <td><i class="f">Free Parking</i></td>
+  <td id="b[[=i]]" style="text-align:right;">>=GameSlot[game_id].FreeParkingBalance<</td>>
+  if player_id=-1 then //is bank
+   begin
+    <<td>&nbsp;</td>>
+   end
+  else
+   begin
+    <<td><button style="width:2em;" id="s[[=i]]" onclick="tt('s',[[=i]]);">&larr;</button></td>>
+   end;
+  <<td><input type="number" id="a[[=i]]" style="width:4em;text-align:right;" /></td>>
+  if DoesBank or (player_id=-1) then
+   begin
+    <<td>
+    <button style="width:2em;" id="i[[=i]]" onclick="tt('c',[[=i]]);">+</button>
+    <button style="width:2em;" id="j[[=i]]" onclick="tt('d',[[=i]]);">-</button>
+    </td>>
+   end;
+  if player_id<>-1 then
+   begin
+    <<td>
+    <button style="width:4.2em;" id="i[[=i]]" onclick="tt('f',[[=i]]);">Claim</button>
+    </td>>
+   end;
+  <</tr>>
+ end;
 
 <</table>
 
@@ -181,6 +212,7 @@ function tt(t,n){
   var a=document.getElementById("a"+n);
   var b=a.value|0;
   a.value="";
+  if(t=="f")b=document.getElementById("b"+n).textContent|0;
   if(b>0){
     tn++;
     document.getElementById("t").src=

@@ -19,14 +19,14 @@ var
       Balance,GameIndex:integer;
       Connected:boolean;
     end;
-    PlayerBank,GameIndex,PlayerBankGameIndex:integer;
-    PlayerBankConnected:boolean;
+    PlayerBankConnected,FreeParkingCash:boolean;
+    PlayerBank,GameIndex,PlayerBankGameIndex,FreeParkingBalance:integer;
     History:array of string;
     HistorySize:integer;
   end;
 
 function StartGame(const Players:array of string;
-  PlayerBank,StartBalance:integer):integer;
+  PlayerBank,StartBalance:integer;FreeParkingCash:boolean):integer;
 
 function GameIDByPlayerName(const Name:string):integer;
 
@@ -52,7 +52,7 @@ begin
 end;
 
 function StartGame(const Players:array of string;
-  PlayerBank,StartBalance:integer):integer;
+  PlayerBank,StartBalance:integer;FreeParkingCash:boolean):integer;
 var
   n,i,j:integer;
   d:TDateTime;
@@ -102,6 +102,8 @@ begin
     GameSlot[Result].PlayerBankConnected:=false;
     GameSlot[Result].PlayerBankGameIndex:=0;
     //GameSlot[Result].HistorySize:=0;
+    GameSlot[Result].FreeParkingCash:=FreeParkingCash;
+    GameSlot[Result].FreeParkingBalance:=0;
     GameSlot[Result].GameIndex:=0;
     GameSlot[Result].GameSince:=Now;
     GameSlot[Result].GameActive:=true;
@@ -148,7 +150,8 @@ end;
 
 procedure GameTransaction(game_id,p1,p2:integer;const t:string;a:integer);
 var
-  p:integer;
+  p,l:integer;
+  DoesBank:boolean;
   procedure AddHistory(const h:string);
   begin
     if GameSlot[game_id].GameIndex=GameSlot[game_id].HistorySize then
@@ -166,34 +169,86 @@ begin
   try
     if a<=0 then
       raise Exception.Create('Invalid transaction amount');
-  
+    DoesBank:=((p1=-1) and (GameSlot[game_id].PlayerBank=PlayerBank_SeparateConnection))
+      or (GameSlot[game_id].PlayerBank=PlayerBank_AllPlayersDoBank)
+      or (p1=GameSlot[game_id].PlayerBank);
+    l:=Length(GameSlot[game_id].Players);
     if t='s' then
      begin
       if p1=p2 then
         raise Exception.Create('Can''t transact to self');
       if GameSlot[game_id].Players[p1].Balance<a then
         raise Exception.Create('Unsufficient balance');
-      dec(GameSlot[game_id].Players[p1].Balance,a);
-      inc(GameSlot[game_id].Players[p2].Balance,a);
-      AddHistory(HTMLEncode(GameSlot[game_id].Players[p1].Name)+' &rarr; '+HTMLEncode(GameSlot[game_id].Players[p2].Name));
+      if (p1<0) or (p2<0) or (p1>=l) then
+        raise Exception.Create('Invalid player index');
+      if GameSlot[game_id].FreeParkingCash and (p2=l) then
+       begin
+        dec(GameSlot[game_id].Players[p1].Balance,a);
+        inc(GameSlot[game_id].FreeParkingBalance,a);
+        AddHistory(HTMLEncode(GameSlot[game_id].Players[p1].Name)+' &rarr; <i class="f">Free Parking</i>');
+       end
+      else
+       begin
+        if (p2>=l) then
+          raise Exception.Create('Invalid player index');
+        dec(GameSlot[game_id].Players[p1].Balance,a);
+        inc(GameSlot[game_id].Players[p2].Balance,a);
+        AddHistory(HTMLEncode(GameSlot[game_id].Players[p1].Name)+' &rarr; '+HTMLEncode(GameSlot[game_id].Players[p2].Name));
+       end;
      end
     else
     if t='c' then
      begin
-      //if GameSlot[game_id].PlayerBank=PlayerBank_SeparateConnection
-      if p1=-1 then p:=p2 else p:=p1;
-      inc(GameSlot[game_id].Players[p].Balance,a);
-      AddHistory('<i>Bank</i> &rarr; '+HTMLEncode(GameSlot[game_id].Players[p].Name));
+      if not DoesBank then
+        raise Exception.Create('Invalid authorization');
+      if GameSlot[game_id].FreeParkingCash and (p2=l) then
+       begin
+        inc(GameSlot[game_id].FreeParkingBalance,a);
+        AddHistory('<i class="b">Bank</i> &rarr; <i class="f">Free Parking</i>');
+       end
+      else
+       begin
+        if p1=-1 then p:=p2 else p:=p1;
+        if (p<0) or (p>=l) then
+          raise Exception.Create('Invalid player index');
+        inc(GameSlot[game_id].Players[p].Balance,a);
+        AddHistory('<i class="b">Bank</i> &rarr; '+HTMLEncode(GameSlot[game_id].Players[p].Name));
+       end;
      end
     else
     if t='d' then
      begin
-      //if GameSlot[game_id].PlayerBank=PlayerBank_SeparateConnection
-      if p1=-1 then p:=p2 else p:=p1;
-      if GameSlot[game_id].Players[p].Balance<a then
-        raise Exception.Create('Unsufficient balance');
-      dec(GameSlot[game_id].Players[p].Balance,a);
-      AddHistory(HTMLEncode(GameSlot[game_id].Players[p].Name)+' &rarr; <i>Bank</i>');
+      if not DoesBank then
+        raise Exception.Create('Invalid authorization');
+      if GameSlot[game_id].FreeParkingCash and (p2=l) then
+       begin
+        dec(GameSlot[game_id].FreeParkingBalance,a);
+        AddHistory('<i class="f">Free Parking</i> &rarr; <i class="b">Bank</i>');
+       end
+      else
+       begin
+        if p1=-1 then p:=p2 else p:=p1;
+        if (p<0) or (p>=l) then
+          raise Exception.Create('Invalid player index');
+        if GameSlot[game_id].Players[p].Balance<a then
+          raise Exception.Create('Unsufficient balance');
+        dec(GameSlot[game_id].Players[p].Balance,a);
+        AddHistory(HTMLEncode(GameSlot[game_id].Players[p].Name)+' &rarr; <i class="b">Bank</i>');
+       end;
+     end
+    else
+    if t='f' then
+     begin
+      //Free Parking Cash
+      if not(GameSlot[game_id].FreeParkingCash) then
+        raise Exception.Create('Free Parking Cash not enabled on this game');
+      if p1=-1 then p:=p2 else p:=p1; //if not DoesBank then raise?
+      if (p<0) or (p>=l) then
+        raise Exception.Create('Invalid player index');
+      a:=GameSlot[game_id].FreeParkingBalance;
+      inc(GameSlot[game_id].Players[p].Balance,a);
+      GameSlot[game_id].FreeParkingBalance:=0;
+      AddHistory('<i class="f">Free Parking</i> &rarr; '+HTMLEncode(GameSlot[game_id].Players[p].Name));
      end
     else
       raise Exception.Create('Unknown transaction type');

@@ -20,6 +20,8 @@ else
   s:='';
   for i:=0 to Length(GameSlot[game_id].Players)-1 do
     s:=s+':'+IntToStr(GameSlot[game_id].Players[i].Balance);
+  if GameSlot[game_id].FreeParkingCash then
+    s:=s+':'+IntToStr(GameSlot[game_id].FreeParkingBalance);
 
   //s:=s+GameSlot[game_id].LastTrans;
 
