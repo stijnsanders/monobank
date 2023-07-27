@@ -98,8 +98,24 @@ for i:=0 to Length(GameSlot[game_id].Players)-1 do
 
 <div id="m" style="height:12em;overflow:scroll;white-space:nowrap;">>
 
+{
 for i:=0 to GameSlot[game_id].GameIndex-1 do
   Context.SendHTML(GameSlot[game_id].History[i]+#13#10);
+}
+
+i:=0;
+while i<GameSlot[game_id].GameIndex do
+ begin
+  Context.SendHTML(GameSlot[game_id].History[i]+#13#10);
+  inc(i);
+ end;
+
+if player_id=-1 then
+  GameSlot[game_id].PlayerBankGameIndex:=i
+else
+  GameSlot[game_id].Players[player_id].GameIndex:=i;
+
+//Context.Flush;?
 
 <</div>
 
