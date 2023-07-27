@@ -47,7 +47,7 @@ else
 
   <label>
   <input type="radio" name="b" value="x" />
-  An extra player "Bank" will connect</label>
+  An extra player "<input type="text" name="bn" style="outline:0;width:2.5em;border:0;text-align:center;" value="Bank" />" will connect</label>
   <br />
 
   Start balance:<br />

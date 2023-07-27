@@ -15,20 +15,20 @@ var
     GameActive:boolean;
     GameSince:TDateTime;
     Players:array of record
-      Name,Clr:string;
+      Name,HTML,Clr:string;
       Balance,GameIndex:integer;
       Connected:boolean;
     end;
     PlayerBankConnected,FreeParkingCash:boolean;
     PlayerBank,GameIndex,PlayerBankGameIndex,FreeParkingBalance:integer;
-    FreeParkingName:string;
+    BankName,FreeParkingName,BankHTML,FreeParkingHTML:string;
     History:array of string;
     HistorySize:integer;
   end;
 
 function StartGame(const Players:array of string;
-  PlayerBank,StartBalance:integer;FreeParkingCash:boolean;
-  FreeParkingName:string):integer;
+  PlayerBank,StartBalance:integer;const BankName:string;
+  FreeParkingCash:boolean;const FreeParkingName:string):integer;
 
 function GameIDByPlayerName(const Name:string):integer;
 
@@ -40,6 +40,9 @@ uses Windows, xxm;
 
 var
   GameSlotLock:TRTLCriticalSection;
+
+const
+  TransactHTML=' &rarr; ';
 
 procedure InitGameSlots;
 var
@@ -54,8 +57,8 @@ begin
 end;
 
 function StartGame(const Players:array of string;
-  PlayerBank,StartBalance:integer;FreeParkingCash:boolean;
-  FreeParkingName:string):integer;
+  PlayerBank,StartBalance:integer;const BankName:string;
+  FreeParkingCash:boolean;const FreeParkingName:string):integer;
 var
   n,i,j:integer;
   d:TDateTime;
@@ -94,6 +97,7 @@ begin
         if Players[j]=Players[i] then
           raise Exception.Create('Player #'+IntToStr(i+1)+': names must be unique');
       GameSlot[Result].Players[i].Name:=Players[i];
+      GameSlot[Result].Players[i].HTML:=HTMLEncode(Players[i]);
       GameSlot[Result].Players[i].Clr:='';//TODO
       GameSlot[Result].Players[i].Balance:=StartBalance;
       GameSlot[Result].Players[i].GameIndex:=0;
@@ -105,8 +109,11 @@ begin
     GameSlot[Result].PlayerBankConnected:=false;
     GameSlot[Result].PlayerBankGameIndex:=0;
     //GameSlot[Result].HistorySize:=0;
+    GameSlot[Result].BankName:=BankName;
+    GameSlot[Result].BankHTML:='<span class="b">'+HTMLEncode(BankName)+'</span>';
     GameSlot[Result].FreeParkingCash:=FreeParkingCash;
     GameSlot[Result].FreeParkingName:=FreeParkingName;
+    GameSlot[Result].FreeParkingHTML:='<span class="f">'+HTMLEncode(FreeParkingName)+'</span>';
     GameSlot[Result].FreeParkingBalance:=0;
     GameSlot[Result].GameIndex:=0;
     GameSlot[Result].GameSince:=Now;
@@ -189,7 +196,7 @@ begin
        begin
         dec(GameSlot[game_id].Players[p1].Balance,a);
         inc(GameSlot[game_id].FreeParkingBalance,a);
-        AddHistory(HTMLEncode(GameSlot[game_id].Players[p1].Name)+' &rarr; <i class="f">'+HTMLEncode(GameSlot[game_id].FreeParkingName)+'</i>');
+        AddHistory(GameSlot[game_id].Players[p1].HTML+TransactHTML+GameSlot[game_id].FreeParkingHTML);
        end
       else
        begin
@@ -197,7 +204,7 @@ begin
           raise Exception.Create('Invalid player index');
         dec(GameSlot[game_id].Players[p1].Balance,a);
         inc(GameSlot[game_id].Players[p2].Balance,a);
-        AddHistory(HTMLEncode(GameSlot[game_id].Players[p1].Name)+' &rarr; '+HTMLEncode(GameSlot[game_id].Players[p2].Name));
+        AddHistory(GameSlot[game_id].Players[p1].HTML+TransactHTML+GameSlot[game_id].Players[p2].HTML);
        end;
      end
     else
@@ -208,7 +215,7 @@ begin
       if GameSlot[game_id].FreeParkingCash and (p2=l) then
        begin
         inc(GameSlot[game_id].FreeParkingBalance,a);
-        AddHistory('<i class="b">Bank</i> &rarr; <i class="f">'+HTMLEncode(GameSlot[game_id].FreeParkingName)+'</i>');
+        AddHistory(GameSlot[game_id].BankHTML+TransactHTML+GameSlot[game_id].FreeParkingHTML);
        end
       else
        begin
@@ -216,7 +223,7 @@ begin
         if (p<0) or (p>=l) then
           raise Exception.Create('Invalid player index');
         inc(GameSlot[game_id].Players[p].Balance,a);
-        AddHistory('<i class="b">Bank</i> &rarr; '+HTMLEncode(GameSlot[game_id].Players[p].Name));
+        AddHistory(GameSlot[game_id].BankHTML+TransactHTML+GameSlot[game_id].Players[p].HTML);
        end;
      end
     else
@@ -227,7 +234,7 @@ begin
       if GameSlot[game_id].FreeParkingCash and (p2=l) then
        begin
         dec(GameSlot[game_id].FreeParkingBalance,a);
-        AddHistory('<i class="f">'+HTMLEncode(GameSlot[game_id].FreeParkingName)+'</i> &rarr; <i class="b">Bank</i>');
+        AddHistory(GameSlot[game_id].FreeParkingHTML+TransactHTML+GameSlot[game_id].BankHTML);
        end
       else
        begin
@@ -237,7 +244,7 @@ begin
         if GameSlot[game_id].Players[p].Balance<a then
           raise Exception.Create('Unsufficient balance');
         dec(GameSlot[game_id].Players[p].Balance,a);
-        AddHistory(HTMLEncode(GameSlot[game_id].Players[p].Name)+' &rarr; <i class="b">Bank</i>');
+        AddHistory(GameSlot[game_id].Players[p].HTML+TransactHTML+GameSlot[game_id].BankHTML);
        end;
      end
     else
@@ -252,7 +259,7 @@ begin
       a:=GameSlot[game_id].FreeParkingBalance;
       inc(GameSlot[game_id].Players[p].Balance,a);
       GameSlot[game_id].FreeParkingBalance:=0;
-      AddHistory('<i class="f">'+HTMLEncode(GameSlot[game_id].FreeParkingName)+'</i> &rarr; '+HTMLEncode(GameSlot[game_id].Players[p].Name));
+      AddHistory(GameSlot[game_id].FreeParkingHTML+TransactHTML+GameSlot[game_id].Players[p].HTML);
      end
     else
       raise Exception.Create('Unknown transaction type');

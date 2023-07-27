@@ -1,7 +1,7 @@
 [[@GameData]][[!var
 i,n,pb,ps,game_id:integer;
 fpc:boolean;
-fpn:string;
+bn,fpn:string;
 pn:array of string;
 ]][[
 Context.BufferSize:=$1000;
@@ -26,12 +26,15 @@ else
   pb:=Context['b'].AsInteger-1;
 
 ps:=Context['sb'].AsInteger;
+bn:=Context['bn'].Value;
 fpc:=Context['fpc'].AsInteger=1;
 fpn:=Context['fpn'].Value;
+
+if bn='' then bn:='Bank';//raise?
 if fpn='' then fpn:='FP';//raise?
 
 try
-  game_id:=StartGame(pn,pb,ps,fpc,fpn);
+  game_id:=StartGame(pn,pb,ps,bn,fpc,fpn);
 
 
   ]]

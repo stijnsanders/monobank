@@ -33,7 +33,7 @@ if DoesBank then
  begin
   <<tr>
   <td colspan="4">&nbsp;</td>
-  <td style="text-align:center;"><i class="b">Bank</i></td>
+  <td style="text-align:center;">>#GameSlot[game_id].BankHTML<</td>
   </tr>>
  end;
 if player_id<>-1 then
@@ -98,7 +98,7 @@ if GameSlot[game_id].FreeParkingCash then
  begin
   i:=Length(GameSlot[game_id].Players);
   <<tr>
-  <td><i class="f">>=GameSlot[game_id].FreeParkingName<</i></td>
+  <td>>#GameSlot[game_id].FreeParkingHTML<</td>
   <td id="b[[=i]]" style="text-align:right;">>=GameSlot[game_id].FreeParkingBalance<</td>>
   if player_id=-1 then //is bank
    begin
